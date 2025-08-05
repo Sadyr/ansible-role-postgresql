@@ -1,0 +1,15 @@
+# Default:
+{% for connection in postgresql_hba_defaults %}
+{% if connection.comment is defined %}
+# {{connection.comment}}
+{% endif %}
+{{connection.type}}  {{connection.database}}  {{connection.user}}  {{  connection.address if connection.address is defined else "" }}  {{connection.method}}
+{% endfor %}
+
+
+{% for connection in postgresql_hba_entries %}
+{% if connection.comment is defined %}
+# {{ connection.comment }}
+{% endif %}
+{{ connection.type }}	{{ connection.database }}	{{ connection.user }}	{{  connection.address if connection.address is defined else "" }}  {{ connection.method }}
+{% endfor %}

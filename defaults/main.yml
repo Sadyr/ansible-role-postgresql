@@ -1,0 +1,48 @@
+---
+### Package management ###
+
+postgresql_yum_repository_url: "http://yum.postgresql.org"
+postgresql_pgdg_repository_url: "https://download.postgresql.org/pub/repos/yum"
+postgresql_yum_repository_baseurl: "{{ postgresql_yum_repository_url }}/{{ postgresql_version }}/{{ ansible_os_family | lower }}/rhel-{{ ansible_distribution_major_version }}-{{ ansible_architecture }}"
+postgresql_yum_repository_gpgkey: "{{ postgresql_pgdg_repository_url }}/keys/PGDG-RPM-GPG-KEY-RHEL"
+postgresql_version: "17"
+postgresql_packages:
+  - "{{ 'postgresql' + postgresql_version + '-server' }}"
+  - "{{ 'postgresql' + postgresql_version + '-contrib' }}"
+  - python3-psycopg2
+postgresql_bin_dir: "/usr/pgsql-{{ postgresql_version }}/bin"
+
+### Service/Cluster/Process Management ###
+
+postgresql_service_name: "{{ 'postgresql-'+ postgresql_version }}" 
+postgresql_service_user: "postgres"
+postgresql_service_group: "postgres"
+postgresql_cluster_name: "infra"
+postgresql_pid_directory: "/var/run/postgresql"
+postgresql_conf_dir: "/var/lib/pgsql/{{ postgresql_version }}/data"
+postgresql_unix_socket_directories:
+  - "{{ postgresql_pid_directory }}"
+postgresql_external_pid_file: "{{ postgresql_pid_directory }}/{{ postgresql_version }}-{{ postgresql_cluster_name }}.pid"
+
+### Data management ###
+
+#postgresql_cluster_reset: true
+postgresql_data_dir: "/var/lib/pgsql/{{postgresql_version}}/data"
+postgresql_log_dir: "{{ postgresql_data_dir }}/log"
+
+### Connection management ###
+postgresql_max_connections: 100
+postgresql_port: 5432
+postgresql_listen_addresses: []
+postgresql_hba_entries: []
+postgresql_firewalld_rules: []
+
+
+### User and Database management
+postgresql_database_owner: "{{ postgresql_admin_user }}"
+postgresql_hide_secrets: false
+postgresql_admin_user: "{{ postgresql_service_user }}"
+
+postgresql_users: []
+postgresql_privileges: []
+postgresql_databases: []

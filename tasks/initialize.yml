@@ -1,0 +1,70 @@
+- name: Ensure the data directory is dropped.
+  ansible.builtin.file:
+    path: "{{ postgresql_data_dir }}"
+    state: absent
+  when: postgresql_cluster_reset | default(false)
+
+- name: Ensure PostgreSQL data directory exists.
+  ansible.builtin.file:
+    path: "{{ postgresql_data_dir }}"
+    owner: "{{ postgresql_service_user }}"
+    group: "{{ postgresql_service_group }}"
+    state: directory
+    mode: 0700
+
+- name: Check if PostgreSQL database is initialized.
+  ansible.builtin.stat:
+    path: "{{ postgresql_data_dir }}/PG_VERSION"
+  register: __pgdata_dir_version
+
+- name: Ensure PostgreSQL database is initialized.
+  ansible.builtin.command: "{{ postgresql_bin_dir }}/initdb -D {{ postgresql_data_dir }}"
+  become: true
+  become_user: "{{ postgresql_service_user }}"
+  when: not __pgdata_dir_version.stat.exists
+
+- name: Verify postgresql cluster version.
+  ansible.builtin.command: "grep  {{ postgresql_version }} {{ postgresql_data_dir }}/PG_VERSION "
+  changed_when: false
+
+- name: Ensure PostgreSQL log directory exists.
+  ansible.builtin.file:
+    path: "{{ postgresql_log_dir }}"
+    owner: "{{ postgresql_service_user }}"
+    group: "{{ postgresql_service_group }}"
+    state: directory
+    mode: 0700
+
+- name: Ensure configuration directory exists.
+  ansible.builtin.file:
+    path: "{{ postgresql_conf_dir }}"
+    owner: "{{ postgresql_service_user }}"
+    group: "{{ postgresql_service_group }}"
+    mode: 0700
+    state: directory
+
+- name: Ensure PostgreSQL pid directory exists.
+  ansible.builtin.file:
+    path: "{{ postgresql_pid_directory }}"
+    state: directory
+    owner: "{{ postgresql_service_user }}"
+    group: "{{ postgresql_service_group }}"
+    mode: 0755
+
+- name: Ensure PostgreSQL unix socket directories exist.
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ postgresql_service_user }}"
+    group: "{{ postgresql_service_group }}"
+    mode: 0755
+  loop: "{{ postgresql_unix_socket_directories }}"
+
+- name: Set selinux context if used not default port(5432)
+  community.general.seport:
+    ports: "{{ postgresql_port }}"
+    proto: tcp
+    setype: postgresql_port_t
+    state: present
+  when: postgresql_port is not eq(5432)
+

@@ -1,0 +1,17 @@
+- name: Check if service firewalld is started
+  ansible.builtin.systemd_service:
+    name: firewalld
+  register: __firewalld
+
+- name: Ensure Firewalld is configured 
+  ansible.posix.firewalld:
+     zone: public
+     rich_rule: 'rule family="{{ item.family }}" source address="{{ item.source }}" port protocol="tcp" port="{{ item.port }}" {{ item.action }}'
+     permanent: true
+     state: "{{ item.state }}"
+     immediate: true
+  loop: "{{ postgresql_firewalld_rules }}"
+  when: 
+  - postgresql_firewalld_rules | length > 0
+  - __firewalld.status.ActiveState == "active" 
+  - __firewalld.status.UnitFileState == "enabled"

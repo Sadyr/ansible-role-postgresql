@@ -1,0 +1,39 @@
+---
+- name: Disable built-in PostgreSQL module
+  ansible.builtin.command: dnf -qy module disable postgresql
+  register: disable_postgresql_module
+  changed_when:
+    - disable_postgresql_module.rc == 0
+
+- name: Add PostgreSQL GPG key
+  ansible.builtin.rpm_key: 
+    state: present
+    key: "{{ postgresql_yum_repository_gpgkey }}"
+
+- name: Gather the package facts from managed node
+  ansible.builtin.package_facts: 
+    manager: auto
+
+- name: Define variable with all installed packages on managed node.
+  set_fact:
+    __packages: "{{ ansible_facts.packages | dict2items | map(attribute='key') }}"
+
+- name: Check whether the all packages from postgresql_packages is installed
+  set_fact:
+    __already_installed: "{{ postgresql_packages | intersect(__packages) | unique | sort }}"
+
+- name: Add PostgreSQL repository
+  ansible.builtin.yum_repository:
+    name: postgresql
+    description: Postgresql yum repository
+    enabled: yes
+    baseurl: "{{ postgresql_yum_repository_baseurl }}"
+
+- name: Ensure PostgresSQL packages are installed
+  ansible.builtin.dnf:
+    name: "{{ postgresql_packages }}"
+    state: present
+    enablerepo: "{{ postgresql_enablerepo | default(omit, true) }}"
+    exclude: python-unversioned-command
+    update_cache: true
+  when: postgresql_packages | unique | sort is not eq(__already_installed)

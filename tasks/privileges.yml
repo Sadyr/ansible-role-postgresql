@@ -1,0 +1,24 @@
+---
+- name: Ensure PostgreSQL is running
+  ansible.builtin.systemd_service:
+    name: "{{ postgresql_service_name }}"
+    state: started
+
+- name: Ensure PostgreSQL users privileges are configured
+  community.postgresql.postgresql_privs:
+    db: "{{ item.db }}"
+    roles: "{{ item.roles }}"
+    privs: "{{ item.privs }}"
+    type: "{{ item.type | default(omit) }}"
+    objs: "{{ item.objs | default(omit) }}"
+    schema: "{{ item.schema | default(omit) }}"
+    grant_option: "{{ item.grant_option | default(false) }}"
+    state: "{{ item.state | default('present') }}"
+    port: "{{ postgresql_port }}"
+  no_log: "{{ postgresql_hide_secrets }}"
+  loop: "{{ postgresql_privileges }}"
+  become: true
+  become_user: "{{ postgresql_service_user }}"
+  when: postgresql_privileges | length > 0
+  environment:
+    PGOPTIONS: "-c password_encryption=scram-sha-256"

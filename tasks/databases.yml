@@ -1,0 +1,22 @@
+---
+- name: Ensure PostgreSQL is running
+  ansible.builtin.systemd_service:
+    name: "{{ postgresql_service_name }}"
+    state: started
+
+- name: Set up PostgreSQL databases
+  community.postgresql.postgresql_db:
+    name: "{{ item.name }}"
+    lc_collate: "{{ item.lc_collate | default('en_US.UTF-8') }}"
+    lc_ctype: "{{ item.lc_ctype | default('en_US.UTF-8') }}"
+    template: "{{ item.template | default('template0') }}"
+    conn_limit: "{{ item.conn_limit | default(omit) }}"
+    login_user: "{{ postgresql_admin_user }}"
+    port: "{{ postgresql_port }}"
+    owner: "{{ item.owner | default(postgresql_database_owner) }}"
+    state: "{{ item.state | default('present') }}"
+  loop: "{{ postgresql_databases }}"
+  no_log: "{{ postgresql_hide_secrets }}"
+  become: true
+  become_user: "{{ postgresql_admin_user }}"
+  when: postgresql_databases | length > 0

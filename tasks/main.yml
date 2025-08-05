@@ -1,0 +1,29 @@
+---
+# tasks file for roles/postgresql.
+- ansible.builtin.import_tasks: setup.yml
+  tags:
+    - postgresql.setup
+
+- ansible.builtin.import_tasks: initialize.yml
+  tags:
+    - postgresql.init
+
+- ansible.builtin.import_tasks: configure.yml
+  tags:
+    - postgresql.configure
+
+- ansible.builtin.import_tasks: users.yml
+  tags:
+    - postgresql.users
+
+- ansible.builtin.import_tasks: databases.yml
+  tags:
+    - postgresql.databases
+
+- ansible.builtin.import_tasks: privileges.yml
+  tags:
+    - postgresql.privileges
+
+- ansible.builtin.import_tasks: firewalld.yml
+  tags:
+    - postgresql.firewalld
