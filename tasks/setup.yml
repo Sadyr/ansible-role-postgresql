@@ -8,7 +8,7 @@
 - name: Add PostgreSQL GPG key
   ansible.builtin.rpm_key: 
     state: present
-    key: "{{ postgresql_yum_repository_gpgkey }}"
+    key: "{{ postgresql_repo_gpgkey }}"
 
 - name: Gather the package facts from managed node
   ansible.builtin.package_facts: 
@@ -22,12 +22,14 @@
   set_fact:
     __already_installed: "{{ postgresql_packages | intersect(__packages) | unique | sort }}"
 
-- name: Add PostgreSQL repository
+- name: Add PostgreSQL repositories
   ansible.builtin.yum_repository:
-    name: postgresql
-    description: Postgresql yum repository
-    enabled: yes
-    baseurl: "{{ postgresql_yum_repository_baseurl }}"
+    name: "{{ item.name }}"
+    description: "{{ item.description }}"
+    enabled: true
+    gpgcheck: true
+    baseurl: "{{ item.baseurl }}"
+  loop: "{{ postgresql_repo_list }}"
 
 - name: Ensure PostgresSQL packages are installed
   ansible.builtin.dnf:

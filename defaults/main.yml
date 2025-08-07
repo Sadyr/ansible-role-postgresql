@@ -1,11 +1,15 @@
 ---
 ### Package management ###
-
-postgresql_yum_repository_url: "http://yum.postgresql.org"
-postgresql_pgdg_repository_url: "https://download.postgresql.org/pub/repos/yum"
-postgresql_yum_repository_baseurl: "{{ postgresql_yum_repository_url }}/{{ postgresql_version }}/{{ ansible_os_family | lower }}/rhel-{{ ansible_distribution_major_version }}-{{ ansible_architecture }}"
-postgresql_yum_repository_gpgkey: "{{ postgresql_pgdg_repository_url }}/keys/PGDG-RPM-GPG-KEY-RHEL"
 postgresql_version: "17"
+postgresql_repo_url: https://download.postgresql.org/pub/repos/yum
+postgresql_repo_gpgkey: "{{ postgresql_repo_url }}/keys/PGDG-RPM-GPG-KEY-RHEL"
+postgresql_repo_list:
+- name: postgresql-common
+  description: "Postgresql common RPMs for RHEL"
+  baseurl: "{{ postgresql_repo_url }}/common/redhat/rhel-{{ ansible_distribution_major_version }}-{{ ansible_architecture }}"
+- name: "postgresql-{{ postgresql_version }}"
+  description: "PostgreSQL {{ postgresql_version }} for RHEL"
+  baseurl:  "{{ postgresql_repo_url }}/{{ postgresql_version }}/redhat/rhel-{{ ansible_distribution_major_version }}-{{ ansible_architecture }}"
 postgresql_packages:
   - "{{ 'postgresql' + postgresql_version + '-server' }}"
   - "{{ 'postgresql' + postgresql_version + '-contrib' }}"
