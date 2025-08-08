@@ -2,7 +2,8 @@
 ### Package management ###
 postgresql_version: "17"
 postgresql_package_mirror: https://download.postgresql.org/pub/repos/yum
-postgresql_package_gpgkey: "{{ postgresql_package_mirror }}/keys/PGDG-RPM-GPG-KEY-RHEL"
+postgresql_package_gpgkeys: 
+- "{{ postgresql_package_mirror }}/keys/PGDG-RPM-GPG-KEY-RHEL"
 postgresql_package_repos:
 - name: postgresql-common
   description: "Postgresql common RPMs for RHEL"
