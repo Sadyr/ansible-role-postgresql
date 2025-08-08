@@ -8,7 +8,7 @@
 - name: Add PostgreSQL GPG key
   ansible.builtin.rpm_key: 
     state: present
-    key: "{{ postgresql_repo_gpgkey }}"
+    key: "{{ postgresql_package_gpgkey }}"
 
 - name: Gather the package facts from managed node
   ansible.builtin.package_facts: 
@@ -29,7 +29,7 @@
     enabled: true
     gpgcheck: true
     baseurl: "{{ item.baseurl }}"
-  loop: "{{ postgresql_repo_list }}"
+  loop: "{{ postgresql_package_repos }}"
 
 - name: Ensure PostgresSQL packages are installed
   ansible.builtin.dnf:
